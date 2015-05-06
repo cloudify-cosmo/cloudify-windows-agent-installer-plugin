@@ -24,7 +24,7 @@ setup(
     license='LICENSE',
     description='Plugin for installing a Cloudify agent on a windows machine',
     install_requires=[
-        'cloudify-plugins-common==3.2rc1',
+        'cloudify-plugins-common==3.2',
         'pywinrm==0.0.2dev',
     ]
 )
