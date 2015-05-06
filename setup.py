@@ -17,7 +17,7 @@ from setuptools import setup
 
 setup(
     name='cloudify-windows-agent-installer-plugin',
-    version='1.2rc1',
+    version='1.2',
     author='Gigaspaces',
     author_email='cloudify@gigaspaces.com',
     packages=['windows_agent_installer'],
