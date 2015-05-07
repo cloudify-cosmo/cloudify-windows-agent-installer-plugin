@@ -17,7 +17,8 @@ import time
 
 from cloudify import utils
 from cloudify import amqp_client
-from cloudify import constants
+from cloudify import env
+from cloudify.celery import celery as celery_client
 from cloudify.decorators import operation
 from cloudify.exceptions import NonRecoverableError
 
@@ -57,22 +58,18 @@ def get_agent_package_url():
 
 
 def create_env_string(cloudify_agent):
-    env = {
-        constants.CELERY_WORK_DIR_PATH_KEY:
-        RUNTIME_AGENT_PATH,
-        constants.LOCAL_IP_KEY:
-        cloudify_agent['host'],
-        constants.MANAGER_IP_KEY:
+    environment = {
+        env.MANAGER_IP_KEY:
         utils.get_manager_ip(),
-        constants.MANAGER_FILE_SERVER_BLUEPRINTS_ROOT_URL_KEY:
+        env.MANAGER_FILE_SERVER_BLUEPRINTS_ROOT_URL_KEY:
         utils.get_manager_file_server_blueprints_root_url(),
-        constants.MANAGER_FILE_SERVER_URL_KEY:
+        env.MANAGER_FILE_SERVER_URL_KEY:
         utils.get_manager_file_server_url(),
-        constants.MANAGER_REST_PORT_KEY:
+        env.MANAGER_REST_PORT_KEY:
         utils.get_manager_rest_service_port()
     }
     env_string = ''
-    for key, value in env.iteritems():
+    for key, value in environment.iteritems():
         env_string = '{0} {1}={2}' \
             .format(env_string, key, value)
     return env_string.strip()
@@ -126,9 +123,9 @@ def install(ctx, runner=None, cloudify_agent=None, **kwargs):
                       AGENT_INCLUDES))
     runner.run('{0}\\nssm\\nssm.exe install {1} {0}\Scripts\celeryd.exe {2}'
                .format(RUNTIME_AGENT_PATH, AGENT_SERVICE_NAME, params))
-    env = create_env_string(cloudify_agent)
+    environment = create_env_string(cloudify_agent)
     runner.run('{0}\\nssm\\nssm.exe set {1} AppEnvironmentExtra {2}'
-               .format(RUNTIME_AGENT_PATH, AGENT_SERVICE_NAME, env))
+               .format(RUNTIME_AGENT_PATH, AGENT_SERVICE_NAME, environment))
     runner.run('sc config {0} start= auto'.format(AGENT_SERVICE_NAME))
     runner.run(
         'sc failure {0} reset= {1} actions= restart/{2}'.format(
